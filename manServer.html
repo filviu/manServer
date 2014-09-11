@@ -1,0 +1,722 @@
+<HTML><HEAD>
+<TITLE>manServer - Man Page To HTML Converter</TITLE>
+<BODY bgcolor=#F0F0F0 text=#000000 link=#0000ff vlink=#C000C0 alink=#ff0000><A NAME=top></A>
+<!-- .\" Checklist when releasing new version: -->
+<!-- .\" - update version number in .TH and download section -->
+<!-- .\" - add history comment -->
+<!-- .\" - run manServer on manServer.1 -->
+<!-- .\" - amend <TITLE> and insert 'nroff output' link -->
+<!-- .\" - copy to download area -->
+<!-- .\" -->
+<!-- .TH MANSERVER l "16 July 2001" "v1.07" -->
+<CENTER>
+<H1><HR><I>Manual Reference Pages &nbsp;-&nbsp;</I><NOBR>MANSERVER (l)</NOBR><HR></H1>
+</CENTER>
+<!-- .SH NAME -->
+<A name=0>
+
+     <H3>NAME</H3>
+
+</A>
+<BLOCKQUOTE>
+manServer - convert manual pages to HTML for viewing with a web browser
+<!-- .SH SYNOPSIS -->
+</BLOCKQUOTE>
+<A name=contents></A><H3>CONTENTS</H3></A>
+<BLOCKQUOTE>
+<A HREF=#1>Synopsis</A><BR>
+<A HREF=#2>Description</A><BR>
+&nbsp; &nbsp; &nbsp;<A HREF=#3>Structure and layout macros</A><BR>
+&nbsp; &nbsp; &nbsp;<A HREF=#4>Text style support</A><BR>
+&nbsp; &nbsp; &nbsp;<A HREF=#5>Hyperlinks</A><BR>
+&nbsp; &nbsp; &nbsp;<A HREF=#6>Troff emulation</A><BR>
+&nbsp; &nbsp; &nbsp;<A HREF=#7>Tbl support</A><BR>
+&nbsp; &nbsp; &nbsp;<A HREF=#8>Eqn support</A><BR>
+&nbsp; &nbsp; &nbsp;<A HREF=#9>Doc macros</A><BR>
+<A HREF=#10>Operation</A><BR>
+<A HREF=#11>Environment</A><BR>
+<A HREF=#12>Files</A><BR>
+<A HREF=#13>Author</A><BR>
+<A HREF=#14>History</A><BR>
+<A HREF=#15>Bugs</A><BR>
+</BLOCKQUOTE>
+<A name=16>
+
+     <H3>SYNOPSIS</H3>
+
+</A>
+<BLOCKQUOTE>
+<!-- .B manServer -->
+<B>manServer</B> [
+<!-- .B \-s -->
+<B>-s</B> [
+<!-- .I port -->
+<I>port</I> ]
+]
+[
+<!-- .I filename -->
+<I>filename</I> ]
+<!-- .SH DESCRIPTION -->
+</BLOCKQUOTE>
+<A name=2>
+
+     <H3>DESCRIPTION</H3>
+
+</A>
+<BLOCKQUOTE>
+<!-- .LP -->
+<P>
+<!-- .B manServer -->
+<B>manServer</B> is a troff (or nroff) to HTML interpreter written in Perl.
+It is designed specifically to convert manual pages written using the
+<!-- .BR man (7) -->
+<B>man</B>(7)
+troff macros into HTML for display and navigation with a web browser.
+To this end it includes direct support for man macros (also limited support for
+tbl, eqn and the doc macros) as well as the most common troff directives.
+<!-- .LP -->
+<P>
+It differs from programs like <B>man2html</B> which merely take rather ugly
+<A href="manServer.txt">nroff output</A> and put a thin HTML wrapper around it.
+<!-- .LP -->
+<P>
+The following macros and directives are supported by <B>manServer</B>, with varying degrees
+of correspondence to their troff counterparts. Where there are significant
+differences these are usually due
+to the fact that troff tends to be layout-oriented while HTML is more content-oriented
+and does not provide the same kind of detailed layout control.
+<!-- .\" ------------------------ -->
+<!-- .SS Structure and layout macros -->
+</BLOCKQUOTE>
+<A name=3>
+
+    <H4>&nbsp; &nbsp; Structure and layout macros</H4>
+</A>
+<BLOCKQUOTE>
+<!-- .LP -->
+<P>
+Standard man paragraph macros are quite well implemented,
+using tables to control indenting. These include:
+<!-- .RS -->
+<BLOCKQUOTE>
+<!-- .TS -->
+<P><BLOCKQUOTE><TABLE bgcolor=#E0E0E0 border=1 cellspacing=0 cellpadding=3>
+<!-- lB l. -->
+<TR valign=top>
+<TD><B>&#46;TP .HP .IP</B></TD><TD>Hanging paragraph types</TD></TR>
+<TR valign=top>
+<TD><B>&#46;LP .PP .P</B></TD><TD>Flush left paragraphs</TD></TR>
+<TR valign=top>
+<TD><B>&#46;RS .RE</B></TD><TD>Indented blocks</TD></TR>
+<TR valign=top>
+<TD><B>&#46;SH .SS</B></TD><TD>Section and subsection headings</TD></TR>
+<TR valign=top>
+<TD><B>&#46;br .sp</B></TD><TD>Line break and spacing</TD></TR>
+</TABLE></BLOCKQUOTE>
+<!-- .RE -->
+</BLOCKQUOTE>
+<!-- .LP -->
+<P>
+Tab and tab stops (.ta, .DT) work, but only when using a constant width font. In practice this means
+within a no-fill block (.nf) that doesn&#146;t include any font style or size changes.
+<!-- .LP -->
+<P>
+Temporary indents (.ti) and spacing control (.sp, paragraph spacing with .PD) don&#146;t
+work terribly well because HTML does not provide appropriate control.
+<!-- .\" ------------------------ -->
+<!-- .SS Text style support -->
+</BLOCKQUOTE>
+<A name=4>
+
+    <H4>&nbsp; &nbsp; Text style support</H4>
+</A>
+<BLOCKQUOTE>
+<!-- .LP -->
+<P>
+Standard troff directives (including in-line directives) are reasonably well
+implemented, including:
+<!-- .RS -->
+<BLOCKQUOTE>
+<!-- .TS -->
+<P><BLOCKQUOTE><TABLE bgcolor=#E0E0E0 border=1 cellspacing=0 cellpadding=3>
+<!-- lB l. -->
+<TR valign=top>
+<TD><B>&#92;fB &#92;f2 &#92;fC &#92;fP </B>etc.</TD><TD>Font control</TD></TR>
+<TR valign=top>
+<TD><B>&#46;B .I .R</B></TD><TD>Single word in alternate fonts</TD></TR>
+<TR valign=top>
+<TD><B>&#46;RI .BI .BR </B>etc.</TD><TD>Alternating roman/italic/bold text styles</TD></TR>
+<TR valign=top>
+<TD><B>&#92;s&#177;</B><I>n</I><B> &#92;s0</B></TD><TD>Point size control</TD></TR>
+<TR valign=top>
+<TD><B>&#46;ft .ps .SM</B></TD><TD>Font & size control</TD></TR>
+<TR valign=top>
+<TD><B>&#46;nf .fi</B></TD><TD>No-fill block (eg. code examples)</TD></TR>
+<TR valign=top>
+<TD><B>&#92;u &#92;d</B></TD><TD>Super/sub-scripting</TD></TR>
+</TABLE></BLOCKQUOTE>
+<!-- .RE -->
+</BLOCKQUOTE>
+<!-- .LP -->
+<P>
+Only one level of super or subscript within a line
+is supported when using &#92;u or &#92;n or eqn sup and sub tags.
+<!-- .LP -->
+<P>
+Special characters in troff are geared towards typesetting mathematical equations,
+whereas the iso8859 character set supported by most browsers primarily includes foreign accented
+characters. Special characters are implemented wherever possible, but a large number of
+troff characters (such as Greek letters, square root signs and so on) have no equivalent in HTML.
+Conversely, HTML supports many more accented characters than troff, and these can be included
+by inserting HTML character entities such as &amp;THORN; (&THORN;) directly in the troff source.
+<!-- .LP -->
+<P>
+Overstriking (&#92;z, &#92;o) and local motion (&#92;h, &#92;v) directives have no equivalent in HTML
+and are filtered out. A handful of overstrike combinations (combining a colon or apostrophe
+with a vowel to produce an accented character) are recognised and converted however.
+<!-- .\" ------------------------ -->
+<!-- .SS Hyperlinks -->
+</BLOCKQUOTE>
+<A name=5>
+
+    <H4>&nbsp; &nbsp; Hyperlinks</H4>
+</A>
+<BLOCKQUOTE>
+<!-- .LP -->
+<P>
+A key benefit of using HTML is being able to turn the manual pages into
+hypertext for convenience of browsing:
+<!-- .IP - 3 -->
+<TABLE cellpadding=3><!-- tsb: A key benefit of using HTML is being able to turn the manual pages into
+ -->
+<TR></TR><TR></TR>
+<TR valign=top><TD width=3%>
+-
+</TD><TD>
+Items that look like a man page reference, especially following a .BR tag,
+are turned into links. (This only applies if manServer is running as a server, not
+from the command line).
+<!-- .IP - -->
+</TD></TR>
+<TR valign=top><TD width=3%>
+-
+</TD><TD>
+URLs (http, ftp and mailto) are converted to links.
+<!-- .IP - -->
+</TD></TR>
+<TR valign=top><TD width=3%>
+-
+</TD><TD>
+Included text (using a .so directive) is implemented as a link to a separate page.
+<!-- .IP - -->
+</TD></TR>
+<TR valign=top><TD width=3%>
+-
+</TD><TD>
+A table of contents with links to each section (.SH or .SS) is generated at the
+start of the page.
+<!-- .IP - -->
+</TD></TR>
+<TR valign=top><TD width=3%>
+-
+</TD><TD>
+Text in bold which starts with a capital letter and matches the name of a section
+is turned into a link to that section.
+<!-- .IP - -->
+</TD></TR>
+<TR valign=top><TD width=3%>
+-
+</TD><TD>
+An index of man page sections and the contents of each section are produced to
+allow browsing throughout the man pages.
+<!-- .IP - -->
+</TD></TR>
+<TR valign=top><TD width=3%>
+-
+</TD><TD>
+As well as browsing through the index the name of a man page can be entered
+in a search dialog. Whenever a search is ambiguous a choice of matching pages is given.
+<!-- .\" ------------------------ -->
+<!-- .SS Troff emulation -->
+</TD></TR>
+<TR></TR></TABLE></BLOCKQUOTE>
+<A name=6>
+
+    <H4>&nbsp; &nbsp; Troff emulation</H4>
+</A>
+<BLOCKQUOTE>
+The following are well implemented:
+<!-- .IP - 3 -->
+<TABLE cellpadding=3><!-- tsb: The following are well implemented:
+ -->
+<TR></TR><TR></TR>
+<TR valign=top><TD width=3%>
+-
+</TD><TD>
+Strings can be defined and interpolated (.ds).
+<!-- .IP - 3 -->
+</TD></TR>
+<TR valign=top><TD width=3%>
+-
+</TD><TD>
+Simple macros can be defined (.de) and used, also renamed (.rn, .rm).
+<!-- .IP - 3 -->
+</TD></TR>
+<TR valign=top><TD width=3%>
+-
+</TD><TD>
+Ignore blocks (.ig) and comments (.&#92;") are propagated through as HTML comments.
+<!-- .LP -->
+</TD></TR>
+<!-- LP ends table -->
+<TR></TR></TABLE>The following features are not implemented as fully as they might be.
+<!-- .IP - 3 -->
+<TABLE cellpadding=3><!-- tsb: The following features are not implemented as fully as they might be.
+ -->
+<TR></TR><TR></TR>
+<TR valign=top><TD width=3%>
+-
+</TD><TD>
+Conditional expressions (.if, .ie, .el) are barely implemented.
+<!-- .IP - 3 -->
+</TD></TR>
+<TR valign=top><TD width=3%>
+-
+</TD><TD>
+Number registers and interpolation are partly implemented, but don&#146;t support
+auto-increment or formatting styles.
+<!-- .LP -->
+</TD></TR>
+<!-- LP ends table -->
+<TR></TR></TABLE>A number of features are not yet implemented though arguably they could or should be.
+<!-- .IP - 3 -->
+<TABLE cellpadding=3><!-- tsb: A number of features are not yet implemented though arguably they could or should be.
+ -->
+<TR></TR><TR></TR>
+<TR valign=top><TD width=3%>
+-
+</TD><TD>
+Text diversions and input traps.
+<!-- .LP -->
+</TD></TR>
+<!-- LP ends table -->
+<TR></TR></TABLE>There&#146;s no way of measuring the width of text when a proportional font is used
+for rendering, so a very approximate guess is calculated when using the &#92;w directive
+(normal characters count as 1, whereas spaces and punctuation count as half a character).
+<!-- .\" ------------------------ -->
+<!-- .SS Tbl support -->
+</BLOCKQUOTE>
+<A name=7>
+
+    <H4>&nbsp; &nbsp; Tbl support</H4>
+</A>
+<BLOCKQUOTE>
+<!-- .LP -->
+<P>
+Tables using the
+<!-- .BR tbl (1) -->
+<B>tbl</B>(1)
+preprocessor (between .TS and .TE macros) are rendered
+quite well, the main deficiency being that HTML tables do not give you control
+over whether individual cells have a border around them or not.
+<!-- .LP -->
+<P>
+A number of heuristics are applied to try to determine when a row is actually
+a continuation of the previous row so the data can be merged.
+<!-- .\" ------------------------ -->
+<!-- .SS Eqn support -->
+</BLOCKQUOTE>
+<A name=8>
+
+    <H4>&nbsp; &nbsp; Eqn support</H4>
+</A>
+<BLOCKQUOTE>
+<!-- .LP -->
+<P>
+A half-hearted attempt at interpreting
+<!-- .BR eqn (1) -->
+<B>eqn</B>(1)
+tags (between .EQ and .EN and inline delimeters)
+is made and copes reasonably well with simple expressions including things like super
+and subscripts. It makes no
+attempt to implement features that would result in more than one line of output however.
+<!-- .\" ------------------------ -->
+<!-- .SS Doc macros -->
+</BLOCKQUOTE>
+<A name=9>
+
+    <H4>&nbsp; &nbsp; Doc macros</H4>
+</A>
+<BLOCKQUOTE>
+<!-- .LP -->
+<P>
+Manual pages written using the Berkely <B>doc</B> macros are recognised and
+implemented to about the same extent as the corresponding <B>man</B> macros. (If anything,
+doc macros are easier to implement because they are slightly more content-oriented,
+if a little odd).
+<!-- .LP -->
+<P>
+Supported doc macros include:
+<!-- .RS -->
+<BLOCKQUOTE>
+<!-- .TS -->
+<P><BLOCKQUOTE><TABLE bgcolor=#E0E0E0 border=1 cellspacing=0 cellpadding=3>
+<!-- lB l. -->
+<TR valign=top>
+<TD><B>&#46;Dt .Sh .Ss</B></TD><TD>Title and section headings</TD></TR>
+<TR valign=top>
+<TD><B>&#46;Nd .Os .Dd</B></TD><TD>Document name etc.</TD></TR>
+<TR valign=top>
+<TD><B>&#46;Bd .Ed</B></TD><TD>Fill block</TD></TR>
+<TR valign=top>
+<TD><B>&#46;Bl .El .It</B></TD><TD>Lists</TD></TR>
+<TR valign=top>
+<TD><B>&#46;Xr .Sx</B></TD><TD>Cross references</TD></TR>
+<TR valign=top>
+<TD><B>&#46;Op .Fl .Pa .Ns .No .Ad .Em .Fa
+<BR>
+&#46;Ft .Ic .Cm .Va .Sy .Nm .Li .Dv
+<BR>
+&#46;Ev .Tn .Dl .Bq .Qq .Qo .Qc </B><I>etc.</I>
+</TD><TD>Assorted content-based style tags (option, flag, etc.)
+</TD></TR>
+</TABLE></BLOCKQUOTE>
+<!-- .RE -->
+</BLOCKQUOTE>
+<!-- .SH OPERATION -->
+</BLOCKQUOTE>
+<A name=10>
+
+     <H3>OPERATION</H3>
+
+</A>
+<BLOCKQUOTE>
+Synopsis:
+<!-- .B manServer -->
+<B>manServer</B> [
+<!-- .B \-s -->
+<B>-s</B> [
+<!-- .I port -->
+<I>port</I> ]
+]
+[
+[<B>-d</B><I>debuglevel</I>]
+<!-- .I filename -->
+<I>filename</I> ]
+<!-- .LP -->
+<P>
+<!-- .B manServer -->
+<B>manServer</B> works in one of three modes, depending on how it is invoked:
+<!-- .TP -->
+<TABLE cellpadding=3><!-- tsb: <B>manServer</B>  -->
+<TR></TR><TR></TR>
+<TR valign=top><TD width=6% nowrap>
+o
+</TD><TD valign=bottom>
+If given a
+<!-- .I filename -->
+<I>filename</I> the file is processed and the HTML generated is written to standard out.
+<!-- .TP -->
+</TD></TR>
+<TR valign=top><TD width=6% nowrap>
+o
+</TD><TD valign=bottom>
+If invoked with the <B>-s</B> option
+<!-- .B manServer -->
+<B>manServer</B> runs as a standalone HTTP server, directly responding to requests from a web browser,
+either on port 8888 or the port specified.
+<!-- .B manServer -->
+<B>manServer</B> enters a loop and continues processing requests until it crashes, is killed, or the universe ends.
+<!-- .IP -->
+</TD></TR>
+<TR valign=top><TD width=6%>
+
+</TD><TD>
+Note that for speed and simplicity, a new process is <I>not</I> forked to process each request,
+so if the server dies while processing a request you will have to restart it.
+<!-- .TP -->
+</TD></TR>
+<TR valign=top><TD width=6% nowrap>
+o
+</TD><TD valign=bottom>
+If invoked with no arguments and the
+<!-- .B GATEWAY_INTERFACE -->
+<B>GATEWAY_INTERFACE</B> environment variable is set it is assumed to be running as a CGI script invoked
+by a standalone web server such as CERN HTTPD and a single request is serviced.
+<!-- .IP -->
+</TD></TR>
+<TR valign=top><TD width=6%>
+
+</TD><TD>
+(If no arguments are specified and
+<!-- .B GATEWAY_INTERFACE -->
+<B>GATEWAY_INTERFACE</B> is not set then
+<!-- .B manServer -->
+<B>manServer</B> enters its HTTP server mode.)
+<!-- .LP -->
+</TD></TR>
+<!-- LP ends table -->
+<TR></TR></TABLE><!-- .B manServer -->
+<B>manServer</B> processes requests for individual man pages, usually specified as just the base
+name (eg. &#146;ls&#146;) or as a name plus section number (eg. &#146;ls.1&#146;) in which case they
+are searched for in the normal <FONT size=-1>MANPATH</FONT> hierarchy. They may also be fully qualified
+(eg. &#146;/usr/man/man1/ls.1&#146;) and this form is necessary if the page appears in
+more than one manual hierarchy.
+<!-- .LP -->
+<P>
+gzip&#146;d manual pages (ending in a .gz suffix) are automatically expanded with zcat,
+similarly .bz2 compressed pages.
+<!-- .SH ENVIRONMENT -->
+</BLOCKQUOTE>
+<A name=11>
+
+     <H3>ENVIRONMENT</H3>
+
+</A>
+<BLOCKQUOTE>
+<!-- .TP -->
+<TABLE cellpadding=3>
+<TR valign=top><TD colspan=2>
+<!-- .SB MANPATH -->
+<B><FONT size=-1>MANPATH</FONT></B> </TD></TR><TR valign=top><TD width=6%>&nbsp;</TD><TD>
+Determines which manual pages are available and where to find them. If not specified
+<!-- .B /usr/man/man* -->
+<B>/usr/man/man*</B> is used.
+<!-- .TP -->
+</TD></TR>
+<TR valign=top><TD colspan=2>
+<!-- .SB GATEWAY_INTERFACE -->
+<B><FONT size=-1>GATEWAY_INTERFACE</FONT></B> </TD></TR><TR valign=top><TD width=6%>&nbsp;</TD><TD>
+Determines whether
+<!-- .B manServer -->
+<B>manServer</B> runs as a CGI script.
+<!-- .TP -->
+</TD></TR>
+<TR valign=top><TD colspan=2>
+<!-- .SB SCRIPT_NAME -->
+<B><FONT size=-1>SCRIPT_NAME</FONT></B> </TD></TR><TR valign=top><TD width=6%>&nbsp;</TD><TD>
+CGI parameter.
+<!-- .TP -->
+</TD></TR>
+<TR valign=top><TD colspan=2>
+<!-- .SB PATH_INFO -->
+<B><FONT size=-1>PATH_INFO</FONT></B> </TD></TR><TR valign=top><TD width=6%>&nbsp;</TD><TD>
+CGI parameter.
+<!-- .TP -->
+</TD></TR>
+<TR valign=top><TD colspan=2>
+<!-- .SB QUERY_STRING -->
+<B><FONT size=-1>QUERY_STRING</FONT></B> </TD></TR><TR valign=top><TD width=6%>&nbsp;</TD><TD>
+CGI parameter.
+<!-- .SH FILES -->
+</TD></TR>
+<TR></TR></TABLE></BLOCKQUOTE>
+<A name=12>
+
+     <H3>FILES</H3>
+
+</A>
+<BLOCKQUOTE>
+<!-- .TP -->
+<TABLE cellpadding=3>
+<TR valign=top><TD colspan=2>
+<!-- .B /etc/manpath.config -->
+<B>/etc/manpath.config</B> <!-- Consumed .TP -->
+<BR>
+<!-- .B /etc/man.config -->
+<B>/etc/man.config</B> </TD></TR><TR valign=top><TD width=6%>&nbsp;</TD><TD>
+Definition of MANPATH under Linux.
+<!-- .TP -->
+</TD></TR>
+<TR valign=top><TD colspan=2>
+<!-- .B /usr/lib/tmac/tmac.an -->
+<B>/usr/lib/tmac/tmac.an</B> <!-- Consumed .TP -->
+<BR>
+<!-- .B /usr/lib/tmac/an -->
+<B>/usr/lib/tmac/an</B> <!-- Consumed .TP -->
+<BR>
+<!-- .B /usr/lib/tmac/tz.map -->
+<B>/usr/lib/tmac/tz.map</B> <!-- Consumed .TP -->
+<BR>
+<!-- .B /usr/lib/groff/tmac/tmac.an -->
+<B>/usr/lib/groff/tmac/tmac.an</B> </TD></TR><TR valign=top><TD width=6%>&nbsp;</TD><TD>
+Man macro definitions, used to get definitions of section and
+referred document abbreviations on various platforms.
+<!-- .TP -->
+</TD></TR>
+<TR valign=top><TD colspan=2>
+<!-- .B /tmp/manServer.log -->
+<B>/tmp/manServer.log</B> </TD></TR><TR valign=top><TD width=6%>&nbsp;</TD><TD>
+Log file that may or may not contain some debug information.
+<!-- .SH "SEE ALSO" -->
+</TD></TR>
+<TR></TR></TABLE></BLOCKQUOTE>
+<A name=>
+
+     <H3>SEE ALSO</H3>
+
+</A>
+<BLOCKQUOTE>
+<!-- .BR man (1), -->
+<B>man</B>(1),
+<!-- .BR man (7), -->
+<B>man</B>(7),
+<!-- .BR nroff (1), -->
+<B>nroff</B>(1),
+<!-- .BR eqn (1), -->
+<B>eqn</B>(1),
+<!-- .BR tbl (1) -->
+<B>tbl</B>(1)
+<!-- .LP -->
+<P>
+The program is available at <A HREF="http://www.squarebox.co.uk/download/manServer_107.pl">http://www.squarebox.co.uk/download/manServer_107.pl</A>
+<!-- .SH AUTHOR -->
+</BLOCKQUOTE>
+<A name=13>
+
+     <H3>AUTHOR</H3>
+
+</A>
+<BLOCKQUOTE>
+Rolf Howarth (<A HREF="mailto:rolf@squarebox.co.uk">rolf@squarebox.co.uk</A>)
+<!-- .SH HISTORY -->
+</BLOCKQUOTE>
+<A name=14>
+
+     <H3>HISTORY</H3>
+
+</A>
+<BLOCKQUOTE>
+<!-- .PD 0 -->
+<!-- .HP -->
+<TABLE cellpadding=0 cellspacing=0>
+<TR valign=top><TD colspan=2>
+<I>16 July 2001</I> (1.07)
+<!-- .br -->
+</TD></TR><TR valign=top><TD width=6%>&nbsp;</TD><TD>
+Added support for bz2 compressed pages. Fixed .so inclusion from other directories. Changes
+for compatibility with RedHat. Added support for removing and renaming macros. Allow
+use of &#92;& to suppress URL expansion. Fixed bug when $ used as a table delimiter.
+Fixed various mdoc bugs for compatiblity with Mac OS X.
+With thanks to the following for suggesting patches: Marache Mathieu, Hans Kristian Fjeld,
+Carl Mascott, Simon Lai, Martin Kraemer, Dan Terpstra, Kathryn Andersen, Eric S. Raymond,
+and Jayan Arayanan.
+<!-- .HP -->
+</TD></TR>
+<TR valign=top><TD colspan=2>
+<I>30 November 1999</I> (1.06)
+<!-- .br -->
+</TD></TR><TR valign=top><TD width=6%>&nbsp;</TD><TD>
+Fixed a font style bug. Minor tidying of contents. Support preformatted text as well
+as nroff pages. Convert special Perl references like &#146;perlfunc&#146; to links.
+<!-- .HP -->
+</TD></TR>
+<TR valign=top><TD colspan=2>
+<I>4 August 1999</I> (1.05)
+<!-- .br -->
+</TD></TR><TR valign=top><TD width=6%>&nbsp;</TD><TD>
+Fixed URL now that my website is at www.squarebox.co.uk instead of www.parallax.co.uk.
+Fixed a taint problem and a minor Netscape table oddity (specifying cols=2).
+<I>12 Jan 1999</I> (1.04)
+<!-- .br -->
+<!-- Need break --><BR>
+Use readdir instead of shell expansion to fix tainting problem under perl 5.005.
+Fix to table of contents generation (prevent redefinition of SH tags).
+Fix to URL detection so punctuation characters aren&#146;t treated as part of link.
+<!-- .HP -->
+</TD></TR>
+<TR valign=top><TD colspan=2>
+<I>10 Nov 1997</I> (1.03)
+<!-- .br -->
+</TD></TR><TR valign=top><TD width=6%>&nbsp;</TD><TD>
+Use Socket.pm to get socket definitions. Fixed a tainting problem under perl 5.004.
+Fixed problem with spurious line breaks when using doc macros.
+<!-- .HP -->
+</TD></TR>
+<TR valign=top><TD colspan=2>
+<I>30 Sept 1997</I> (1.02)
+<!-- .br -->
+</TD></TR><TR valign=top><TD width=6%>&nbsp;</TD><TD>
+Amended some of the character entities. Fixed a couple of standalone server regression bugs.
+Script now runs with -T taint checking.
+<!-- .HP -->
+</TD></TR>
+<TR valign=top><TD colspan=2>
+<I>22 Sept 1997</I> (1.01)
+<!-- .br -->
+</TD></TR><TR valign=top><TD width=6%>&nbsp;</TD><TD>
+Introduction of version numbers. Table spanning fixes. No longer introduces
+broken links when invoked on a file from the command line.
+<!-- .HP -->
+</TD></TR>
+<TR valign=top><TD colspan=2>
+<I>11 Sept 1997</I> (1.00)
+<!-- .br -->
+</TD></TR><TR valign=top><TD width=6%>&nbsp;</TD><TD>
+First release.
+<!-- .HP -->
+</TD></TR>
+<TR valign=top><TD colspan=2>
+<!-- .I May - Aug 1997 -->
+<I>May - Aug 1997</I> <!-- .br -->
+</TD></TR><TR valign=top><TD width=6%>&nbsp;</TD><TD>
+Initial development
+<!-- .PD -->
+<!-- .SH BUGS -->
+</TD></TR>
+<TR></TR></TABLE></BLOCKQUOTE>
+<A name=15>
+
+     <H3>BUGS</H3>
+
+</A>
+<BLOCKQUOTE>
+<!-- .LP -->
+<P>
+Use of newer HTML features (especially style sheets) would improve the look
+of the pages produced.
+<!-- .LP -->
+<P>
+<!-- .B manServer -->
+<B>manServer</B> gets confused by some tags, particular within poorly structured manual pages.
+Some people write some <I>very</I> peculiar manual pages and working out what
+semantic layout they actually meant from the inconsistent layout tags they
+used becomes more and more of a lost cause...
+<!-- .LP -->
+<P>
+Searching man pages (either a free text search or in the manner of
+<!-- .BR apropos (1)) -->
+<B>apropos</B>(1))
+is not yet implemented.
+<!-- .LP -->
+<P>
+The order of parsing and processing troff input (especially things like
+special character codes) differs from troff and there may still be one or two
+bugs in certain situations, eg. where text is parsed twice, contains
+backslashes and/or angle brackets, or where it interacts with eqn or tbl
+emulation.
+<!-- .LP -->
+<P>
+Tags like .B without an argument should apply to the next input line.
+<!-- .LP -->
+<P>
+&#92;fP should restore previous font, not always revert to roman.
+<!-- .LP -->
+<P>
+Styles that span more than one tbl table cell need to be set and reset for
+each HTML table cell.
+<!-- .LP -->
+<P>
+Various additional directives, including setting indent (.in),
+multi-line conditionals, renaming registers and macros, and diverts could
+and should all be implemented.
+<!-- .LP -->
+<P>
+Different Unix platforms may define their own man macro package with variations
+from those implemented here.
+<!-- .B manServer -->
+<B>manServer</B> has been tested with pages under SunOS, Solaris and Debian Linux.
+</BLOCKQUOTE>
+<P><HR>
+<TABLE width=100%><TR> <TD width=33%><I>v1.07</I></TD> <TD width=33% align=center>MANSERVER (l)</TD> <TD align=right width=33%><I>16 July 2001</I></TD> </TR></TABLE><FONT SIZE=-1>Generated by <A HREF="http://www.squarebox.co.uk/download/manServer.shtml">manServer 1.07</A> from manServer.1 using man macros with tbl support.</FONT>
+</BODY></HTML>
